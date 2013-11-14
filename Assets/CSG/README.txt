@@ -17,5 +17,6 @@ Copyright (c) 2013 Andrew Perry (http://omgwtfgames.com), under MIT license (C#/
 
 TODO
 ----
-* Works, but adds a whole pile of verticies that don't need to be there. Find a way to simpify the mesh for tris that share a plane ?
+* Works, but adds a whole pile of verticies that don't need to be there. Find a way to simpify the mesh for tris that share a plane (maybe http://www.melax.com/polychop) ?
+* Currently does nothing with the 'shared' field on Polygons. We could use this for tracking submeshes / materials ?
 * Almost certainly could do with optimization (eg, some Lists could probably become Vertex[] or Polygon[] arrays).

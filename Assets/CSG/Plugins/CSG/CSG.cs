@@ -280,7 +280,8 @@ public class CSG {
 		foreach (int[] array in data) {
 			Array v = array[0],
 				Vector3 n = new Vector3((float)array[1][0], (float)array[1][1], (float)array[1][2]);
-			    // TODO: Wah !?!?!
+			    // TODO: Wah !?!?! I don't really know Actionscript, no do I want to learn. 
+			    //       Unity has a prefab cube, use that.
 				verts:Array = v.map(function(elem:*, index:int, a:Array):IVertex {
 						var i:int = elem as int;
 						return new Vertex(new Vector3D(
