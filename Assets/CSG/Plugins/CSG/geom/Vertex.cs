@@ -13,17 +13,20 @@ using UnityEngine;
  */
 public class Vertex : IVertex
 {
-    public Vector3 pos {get; set; }
+    public Vector3 pos { get; set; }
     public Vector3 normal;
     
     public Vertex(Vector3 pos) {
-        this.pos = pos != null ? pos : Vector3.zero;
-        this.normal = this.normal != null ? normal : Vector3.zero;
+        //this.pos = (pos != Vector3.zero) ? pos : Vector3.zero;
+        this.pos = pos;
+        //this.normal = (this.normal != Vector3.zero) ? normal : Vector3.zero;
     }
     
     public Vertex(Vector3 pos, Vector3 normal) {
-        this.pos = pos != null ? pos : Vector3.zero;
-        this.normal = normal != null ? normal : Vector3.zero;
+        //this.pos = (pos != Vector3.zero) ? pos : Vector3.zero;
+        this.pos = pos;
+        //this.normal = (normal != Vector3.zero) ? normal : Vector3.zero;
+        this.normal = normal;
     }
 
     public IVertex clone() {

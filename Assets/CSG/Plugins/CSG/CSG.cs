@@ -321,10 +321,9 @@ public class CSG {
             sdir *= r;
             vxs.Add(new Vertex(center + sdir, dir));
     }
-    
+
     public static CSG sphere(Vector3 center, float radius=1, float slices=16f, float stacks=8f)
     {
-        Vector3 c = center != null ? center : Vector3.zero;
         float r = radius;
         List<Polygon> polygons = new List<Polygon>();
         List<IVertex> vertices;
@@ -341,7 +340,7 @@ public class CSG {
         }
         return CSG.fromPolygons(polygons);
     }
-    
+
     /**
      * Construct a CSG solid from a list of `Polygon` instances.
      * 
