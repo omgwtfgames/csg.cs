@@ -2,82 +2,81 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+// Constructive Solid Geometry (CSG) is a modeling technique that uses Boolean
+// operations like union and intersection to combine 3D solids. This library
+// implements CSG operations on meshes elegantly and concisely using BSP trees,
+// and is meant to serve as an easily understandable implementation of the
+// algorithm. All edge cases involving overlapping coplanar polygons in both
+// solids are correctly handled.
+// 
+// Example usage:
+// 
+//     var cube = CSG.cube();
+//     var sphere = CSG.sphere({ radius: 1.3 });
+//     var polygons = cube.subtract(sphere).toPolygons();
+// 
+// ## Implementation Details
+// 
+// All CSG operations are implemented in terms of two functions, `clipTo()` and
+// `invert()`, which remove parts of a BSP tree inside another BSP tree and swap
+// solid and empty space, respectively. To find the union of `a` and `b`, we
+// want to remove everything in `a` inside `b` and everything in `b` inside `a`,
+// then combine polygons from `a` and `b` into one solid:
+// 
+//     a.clipTo(b);
+//     b.clipTo(a);
+//     a.build(b.allPolygons());
+// 
+// The only tricky part is handling overlapping coplanar polygons in both trees.
+// The code above keeps both copies, but we need to keep them in one tree and
+// remove them in the other tree. To remove them from `b` we can clip the
+// inverse of `b` against `a`. The code for union now looks like this:
+// 
+//     a.clipTo(b);
+//     b.clipTo(a);
+//     b.invert();
+//     b.clipTo(a);
+//     b.invert();
+//     a.build(b.allPolygons());
+// 
+// Subtraction and intersection naturally follow from set operations. If
+// union is `A | B`, subtraction is `A - B = ~(~A | B)` and intersection is
+// `A & B = ~(~A | ~B)` where `~` is the complement operator.
+// 
+// ## License
+// 
+// Original ActionScript version copyright (c) 2011 Evan Wallace (http://madebyevan.com/), under the MIT license.
+// Ported to C# / Unity by Andrew Perry, 2013.
+
 namespace CombinedStructureGenerator
 {
-    /** 
-    * Constructive Solid Geometry (CSG) is a modeling technique that uses Boolean
-    * operations like union and intersection to combine 3D solids. This library
-    * implements CSG operations on meshes elegantly and concisely using BSP trees,
-    * and is meant to serve as an easily understandable implementation of the
-    * algorithm. All edge cases involving overlapping coplanar polygons in both
-    * solids are correctly handled.
-    * 
-    * Example usage:
-    * 
-    *     var cube = CSG.cube();
-    *     var sphere = CSG.sphere({ radius: 1.3 });
-    *     var polygons = cube.subtract(sphere).toPolygons();
-    * 
-    * ## Implementation Details
-    * 
-    * All CSG operations are implemented in terms of two functions, `clipTo()` and
-    * `invert()`, which remove parts of a BSP tree inside another BSP tree and swap
-    * solid and empty space, respectively. To find the union of `a` and `b`, we
-    * want to remove everything in `a` inside `b` and everything in `b` inside `a`,
-    * then combine polygons from `a` and `b` into one solid:
-    * 
-    *     a.clipTo(b);
-    *     b.clipTo(a);
-    *     a.build(b.allPolygons());
-    * 
-    * The only tricky part is handling overlapping coplanar polygons in both trees.
-    * The code above keeps both copies, but we need to keep them in one tree and
-    * remove them in the other tree. To remove them from `b` we can clip the
-    * inverse of `b` against `a`. The code for union now looks like this:
-    * 
-    *     a.clipTo(b);
-    *     b.clipTo(a);
-    *     b.invert();
-    *     b.clipTo(a);
-    *     b.invert();
-    *     a.build(b.allPolygons());
-    * 
-    * Subtraction and intersection naturally follow from set operations. If
-    * union is `A | B`, subtraction is `A - B = ~(~A | B)` and intersection is
-    * `A & B = ~(~A | ~B)` where `~` is the complement operator.
-    * 
-    * ## License
-    * 
-    * Original ActionScript version copyright (c) 2011 Evan Wallace (http://madebyevan.com/), under the MIT license.
-    * Ported to C# / Unity by Andrew Perry, 2013.
-    * 
-    * class CSG
-    *
-    * Holds a binary space partition tree representing a 3D solid. Two solids can
-    * be combined using the `union()`, `subtract()`, and `intersect()` methods.
-    */
+    /// <summary>
+    /// Holds a binary space partition tree representing a 3D solid. Two solids can
+    /// be combined using the `union()`, `subtract()`, and `intersect()` methods.
+    /// </summary>
     public class CSG
     {
         public List<Polygon> polygons;
         private Bounds bounds = new Bounds();
-
-        /**
-         * Constructor
-         */
+        
+        /// <summary>
+        /// Constuctor
+        /// </summary>
         public CSG()
         {
             this.polygons = new List<Polygon>();
         }
 
-        /**
-         * Clone
-         */
+        /// <summary>
+        /// Clone
+        /// </summary>
+        /// <returns></returns>
         public CSG clone()
         {
             CSG csg = new CSG();
             foreach (Polygon p in this.polygons)
             {
-                csg.polygons.Add(p);
+                csg.polygons.Add(p.clone());
             }
             return csg;
         }
@@ -171,26 +170,24 @@ namespace CombinedStructureGenerator
         {
             return new Vertex(Vector3.Scale(m.vertices[tri], tf.localScale) + tf.position, m.normals[tri]);
         }
-
-        /**
-          * Return a new CSG solid representing space in either this solid or in the
-          * solid `csg`. Neither this solid nor the solid `csg` are modified.
-          * 
-          *     A.union(B)
-          * 
-          *     +-------+            +-------+
-          *     |       |            |       |
-          *     |   A   |            |       |
-          *     |    +--+----+   =   |       +----+
-          *     +----+--+    |       +----+       |
-          *          |   B   |            |       |
-          *          |       |            |       |
-          *          +-------+            +-------+
-          * 
-          * @param csg
-          * 
-          * @return CSG
-          */
+        
+        /// <summary>
+        ///Return a new CSG solid representing space in either this solid or in the
+        ///solid `csg`. Neither this solid nor the solid `csg` are modified.
+        ///
+        ///    A.union(B)
+        ///
+        ///    +-------+            +-------+
+        ///    |       |            |       |
+        ///    |   A   |            |       |
+        ///    |    +--+----+   =   |       +----+
+        ///    +----+--+    |       +----+       |
+        ///         |   B   |            |       |
+        ///         |       |            |       |
+        ///         +-------+            +-------+
+        /// </summary>
+        /// <param name="csg"></param>
+        /// <returns></returns>
         public CSG union(CSG csg)
         {
             Node a = new Node(this.polygons);
@@ -204,25 +201,21 @@ namespace CombinedStructureGenerator
             return CSG.fromPolygons(a.allPolygons());
         }
 
-        /** 
-         * Return a new CSG solid representing space in this solid but not in the
-         * solid `csg`. Neither this solid nor the solid `csg` are modified.
-         * 
-         *     A.subtract(B)
-         * 
-         *     +-------+            +-------+
-         *     |       |            |       |
-         *     |   A   |            |       |
-         *     |    +--+----+   =   |    +--+
-         *     +----+--+    |       +----+
-         *          |   B   |
-         *          |       |
-         *          +-------+
-         * 
-         * @param csg
-         * 
-         * @return CSG
-         */
+        /// <summary>
+        /// Return a new CSG solid representing space in this solid but not in the
+        /// solid `csg`. Neither this solid nor the solid `csg` are modified.
+        /// A.subtract(B)
+        ///    +-------+            +-------+
+        ///    |       |            |       |
+        ///    |   A   |            |       |
+        ///    |    +--+----+   =   |    +--+
+        ///    +----+--+    |       +----+
+        ///         |   B   |
+        ///         |       |
+        ///         +-------+
+        /// </summary>
+        /// <param name="csg"></param>
+        /// <returns></returns>
         public CSG subtract(CSG csg)
         {
             Node a = new Node(this.polygons);
@@ -240,25 +233,22 @@ namespace CombinedStructureGenerator
             return CSG.fromPolygons(a.allPolygons());
         }
 
-        /** 
-         * Return a new CSG solid representing space both this solid and in the
-         * solid `csg`. Neither this solid nor the solid `csg` are modified.
-         * 
-         *     A.intersect(B)
-         * 
-         *     +-------+
-         *     |       |
-         *     |   A   |
-         *     |    +--+----+   =   +--+
-         *     +----+--+    |       +--+
-         *          |   B   |
-         *          |       |
-         *          +-------+
-         * 
-         * @param csg
-         * 
-         * @return CSG
-         */
+        /// <summary>
+        /// Return a new CSG solid representing space both this solid and in the
+        /// solid `csg`. Neither this solid nor the solid `csg` are modified.
+        ///     A.intersect(B)
+        /// 
+        ///    +-------+
+        ///    |       |
+        ///    |   A   |
+        ///    |    +--+----+   =   +--+
+        ///    +----+--+    |       +--+
+        ///         |   B   |
+        ///         |       |
+        ///         +-------+
+        /// </summary>
+        /// <param name="csg"></param>
+        /// <returns>CSG of the intersection</returns>
         public CSG intersect(CSG csg)
         {
             Node a = new Node(this.polygons);
@@ -267,65 +257,47 @@ namespace CombinedStructureGenerator
             b.invert();
             a.clipTo(b);
             b.clipTo(a);
-            //b.invert();
             a.build(b.allPolygons());
-            //a.invert();
             return CSG.fromPolygons(a.allPolygons()).inverse();
         }
 
-        /**
-         * Cube
-         * 
-         * @param center
-         * @param radius
-         * 
-         * @return CSG
-         */
-
-        /*
-        public static CSG cube(Vector3D? center=null, Vector3? radius=null)
+        /// <summary>
+        /// Cube function, Untested but compiles
+        /// </summary>
+        /// <param name="c">center</param>
+        /// <param name="r">radius</param>
+        /// <returns></returns>
+        public static CSG cube(Vector3 c, Vector3 r)
         {
-            Vector3 c = centre != null ? center : Vector3.zero;
-            Vector3 r = radius != null ? center : Vector3.one;
-            List<Polygon> polygons = new List<Polygon>();
-            int[][] data = new int [][] {
-                    {{0, 4, 6, 2}, {-1, 0, 0}},
-                    {{1, 3, 7, 5}, {1, 0, 0}},
-                    {{0, 1, 5, 4}, {0, -1, 0}},
-                    {{2, 6, 7, 3}, {0, 1, 0}},
-                    {{0, 2, 3, 1}, {0, 0, -1}},
-                    {{4, 5, 7, 6}, {0, 0, 1}}
-                };
-            foreach (int[] array in data) {
-                Array v = array[0],
-                    Vector3 n = new Vector3((float)array[1][0], (float)array[1][1], (float)array[1][2]);
-                    // TODO: Wah !?!?! I don't really know Actionscript, no do I want to learn. 
-                    //       Unity has a prefab cube, use that.
-                    verts:Array = v.map(function(elem:*, index:int, a:Array):IVertex {
-                            var i:int = elem as int;
-                            return new Vertex(new Vector3D(
-                                c.x + (r.x * (2 * ((i & 1)?1:0) - 1)),
-                                c.y + (r.y * (2 * ((i & 2)?1:0) - 1)),
-                                c.z + (r.z * (2 * ((i & 4)?1:0) - 1))),
-                                n
-                            );
-                        });
-                polygons.Add(new Polygon(Vector.<IVertex>(verts)));
+            //TODO: Test if this works
+            Polygon[] polygons = new Polygon[6];
+            int[][][] data = new int [][][] {
+                new int[][]{new int[]{0, 4, 6, 2}, new int[]{-1, 0, 0}},
+                new int[][]{new int[]{1, 3, 7, 5}, new int[]{1, 0, 0}},
+                new int[][]{new int[]{0, 1, 5, 4}, new int[]{0, -1, 0}},
+                new int[][]{new int[]{2, 6, 7, 3}, new int[]{0, 1, 0}},
+                new int[][]{new int[]{0, 2, 3, 1}, new int[]{0, 0, -1}},
+                new int[][]{new int[]{4, 5, 7, 6}, new int[]{0, 0, 1}}
+            };
+            for(int x = 0; x < 6; x++) {
+                int[][] v = data[x];
+                Vector3 normal = new Vector3((float)v[1][0], (float)v[1][1], (float)v[1][2]);
+
+                IVertex[] verts = new IVertex[4];
+                for(int i = 0; i< 4; i++)
+                {
+                    verts[i] = new Vertex(
+                        new Vector3(
+                            c.x + (r.x * (2 * (((i & 1) > 0)?1:0) - 1)),
+                            c.y + (r.y * (2 * (((i & 2) > 0)?1:0) - 1)),
+                            c.z + (r.z * (2 * (((i & 4) > 0)?1:0) - 1))),
+                            normal
+                        );
+                }
+                polygons[x] = new Polygon(verts);
             }
             return CSG.fromPolygons(polygons);
         }
-        */
-
-        /**
-         * Sphere
-         * 
-         * @param center
-         * @param radius
-         * @param slices
-         * @param stacks
-         * 
-         * @return CSG
-         */
 
         private static void makeSphereVertex(ref List<IVertex> vxs, Vector3 center, float r, float theta, float phi)
         {
@@ -361,30 +333,35 @@ namespace CombinedStructureGenerator
             return CSG.fromPolygons(polygons);
         }
 
-        /**
-         * Construct a CSG solid from a list of `Polygon` instances.
-         * 
-         * @param polygons
-         * 
-         * @return CSG
-         */
+        /// <summary>
+        /// Construct a CSG solid from a list of `Polygon` instances.
+        /// The polygons are cloned
+        /// </summary>
+        /// <param name="polygons"></param>
+        /// <returns></returns>
         public static CSG fromPolygons(List<Polygon> polygons)
         {
+            //TODO: Optimize polygons to share vertices
             CSG csg = new CSG();
             foreach (Polygon p in polygons)
             {
                 csg.polygons.Add(p.clone());
-                csg.bounds.Expand(p.vertices[0].pos);
-                csg.bounds.Expand(p.vertices[1].pos);
-                csg.bounds.Expand(p.vertices[2].pos);
             }
-            
+
             return csg;
         }
 
-        internal Bounds GetBounds()
+        /// <summary>
+        /// Create CSG from array, does not clone the polygons
+        /// </summary>
+        /// <param name="polygon"></param>
+        /// <returns></returns>
+        private static CSG fromPolygons(Polygon[] polygons)
         {
-            return bounds;
+            //TODO: Optimize polygons to share vertices
+            CSG csg = new CSG();
+            csg.polygons.AddRange(polygons);
+            return csg;
         }
     }
 

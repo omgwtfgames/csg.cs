@@ -1,4 +1,4 @@
-namespace CSG {
+namespace CombinedStructureGenerator {
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -79,7 +79,11 @@ public class Plane {
             case BACK:
                 back.Add(polygon);
                 break;
+            default:
             case SPANNING:
+                if (polygonType != SPANNING)
+                    Debug.Log("Defaulting to spanning");
+
                 List<IVertex> f = new List<IVertex>();
                 List<IVertex> b = new List<IVertex>();
                 for (i = 0; i < vertices.Length; i++) {
@@ -100,8 +104,6 @@ public class Plane {
                 }
                 if (f.Count >= 3) front.Add(new Polygon(f, polygon.shared));
                 if (b.Count >= 3) back.Add(new Polygon(b, polygon.shared));
-                break;
-            default:
                 break;
         }
     }
