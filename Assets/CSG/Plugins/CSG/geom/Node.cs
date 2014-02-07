@@ -114,9 +114,13 @@ namespace CombinedStructureGenerator
         /// </summary>
         /// <param name="polys"></param>
         /// <param name="stack"></param>
-        public void build(List<Polygon> polys, int stack = 4096)
+        public void build(List<Polygon> polys, int stack = 6000)
         {
-            if (stack < 0) return;
+            if (stack < 0)
+            {
+                Debug.LogWarning("Stack overflow prevented");
+                return;
+            }
             if (polys.Count == 0) return;
             if (this.plane == null) this.plane = polys[0].plane.clone();
             List<Polygon> tfront = new List<Polygon>();

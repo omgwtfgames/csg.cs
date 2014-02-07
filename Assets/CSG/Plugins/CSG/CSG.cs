@@ -168,13 +168,17 @@ namespace CombinedStructureGenerator
 
         private static Vertex TranslateVertex(Mesh m, Transform tf, int tri)
         {
-            return new Vertex(Vector3.Scale(m.vertices[tri], tf.localScale) + tf.position, m.normals[tri]);
+            Vector3 pos = tf.TransformPoint(m.vertices[tri]);
+            Vector3 norm= tf.TransformDirection(m.normals[tri]);
+
+            return new Vertex(pos, norm);
         }
 
         /// <summary>
-        ///Return a new CSG solid representing space in either this solid or in the
-        ///solid `csg`. Neither this solid nor the solid `csg` are modified.
-        ///
+        /// Return a new CSG solid representing space in either this solid or in the
+        /// solid `csg`. Neither this solid nor the solid `csg` are modified.
+        /// </summary>
+        /// <remarks>
         ///    A.union(B)
         ///
         ///    +-------+            +-------+
@@ -204,6 +208,8 @@ namespace CombinedStructureGenerator
         /// <summary>
         /// Return a new CSG solid representing space in this solid but not in the
         /// solid `csg`. Neither this solid nor the solid `csg` are modified.
+        /// </summary>
+        /// <remarks>
         /// A.subtract(B)
         ///    +-------+            +-------+
         ///    |       |            |       |
@@ -213,7 +219,7 @@ namespace CombinedStructureGenerator
         ///         |   B   |
         ///         |       |
         ///         +-------+
-        /// </summary>
+        /// </remarks>
         /// <param name="csg"></param>
         /// <returns></returns>
         public CSG subtract(CSG csg)
@@ -236,7 +242,9 @@ namespace CombinedStructureGenerator
         /// <summary>
         /// Return a new CSG solid representing space both this solid and in the
         /// solid `csg`. Neither this solid nor the solid `csg` are modified.
-        ///     A.intersect(B)
+        /// </summary>
+        /// <remarks>
+        /// A.intersect(B)
         /// 
         ///    +-------+
         ///    |       |
@@ -246,7 +254,7 @@ namespace CombinedStructureGenerator
         ///         |   B   |
         ///         |       |
         ///         +-------+
-        /// </summary>
+        /// </remarks>
         /// <param name="csg"></param>
         /// <returns>CSG of the intersection</returns>
         public CSG intersect(CSG csg)
