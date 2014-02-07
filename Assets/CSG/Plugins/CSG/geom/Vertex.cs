@@ -1,4 +1,4 @@
-namespace CSG {
+namespace CombinedStructureGenerator {
 
 using UnityEngine;
 
