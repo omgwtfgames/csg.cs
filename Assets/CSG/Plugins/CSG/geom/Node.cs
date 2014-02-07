@@ -36,9 +36,9 @@ namespace CombinedStructureGenerator
             return node;
         }
 
-        /**
-         * Convert solid space to empty space and empty space to solid space.
-         */
+        /// <summary>
+        /// Convert solid space to empty space and empty space to solid space.
+        /// </summary>
         public void invert()
         {
             if (this.polygons.Count == 0)
@@ -59,11 +59,11 @@ namespace CombinedStructureGenerator
             this.back = temp;
         }
 
-        /**
-         * Recursively remove all polygons in `polygons` that are inside this BSP
-         * tree.
-         * @param polygons
-         */
+        /// <summary>
+        /// Recursively remove all polygons in `polygons` that are inside this BSP tree.
+        /// </summary>
+        /// <param name="polys"></param>
+        /// <returns></returns>
         public List<Polygon> clipPolygons(List<Polygon> polys)
         {
             if (this.plane == null) return new List<Polygon>(polys);
@@ -83,11 +83,10 @@ namespace CombinedStructureGenerator
             return front;
         }
 
-        /**
-         * Remove all polygons in this BSP tree that are inside the other BSP tree
-         *`bsp`.
-         * @param bsp
-         */
+        /// <summary>
+        /// Remove all polygons in this BSP tree that are inside the other BSP tree `bsp`.
+        /// </summary>
+        /// <param name="bsp"></param>
         public void clipTo(Node bsp)
         {
             this.polygons = bsp.clipPolygons(this.polygons);
@@ -95,9 +94,10 @@ namespace CombinedStructureGenerator
             if (this.back != null) this.back.clipTo(bsp);
         }
 
-        /**
-         *  Return a list of all polygons in this BSP tree.
-         */
+        /// <summary>
+        /// Return a list of all polygons in this BSP tree.
+        /// </summary>
+        /// <returns></returns>
         public List<Polygon> allPolygons()
         {
             List<Polygon> polys = new List<Polygon>(this.polygons);
@@ -106,12 +106,14 @@ namespace CombinedStructureGenerator
             return polys;
         }
 
-        /**
-          * Build a BSP tree out of `polygons`. When called on an existing tree, the
-          * new polygons are filtered down to the bottom of the tree and become new
-          * nodes there. Each set of polygons is partitioned using the first polygon
-          * (no heuristic is used to pick a good split).
-          */
+        /// <summary>
+        /// Build a BSP tree out of `polygons`. When called on an existing tree, the
+        /// new polygons are filtered down to the bottom of the tree and become new
+        /// nodes there. Each set of polygons is partitioned using the first polygon
+        /// (no heuristic is used to pick a good split).
+        /// </summary>
+        /// <param name="polys"></param>
+        /// <param name="stack"></param>
         public void build(List<Polygon> polys, int stack = 4096)
         {
             if (stack < 0) return;
@@ -135,5 +137,4 @@ namespace CombinedStructureGenerator
             }
         }
     }
-
 }
