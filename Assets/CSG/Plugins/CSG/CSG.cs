@@ -270,7 +270,7 @@ namespace CombinedStructureGenerator
             //b.invert();
             a.build(b.allPolygons());
             //a.invert();
-            return CSG.fromPolygons(a.allPolygons());
+            return CSG.fromPolygons(a.allPolygons()).inverse();
         }
 
         /**
