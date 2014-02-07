@@ -58,7 +58,7 @@ namespace CombinedStructureGenerator
     {
         public List<Polygon> polygons;
         private Bounds bounds = new Bounds();
-        
+
         /// <summary>
         /// Constuctor
         /// </summary>
@@ -170,7 +170,7 @@ namespace CombinedStructureGenerator
         {
             return new Vertex(Vector3.Scale(m.vertices[tri], tf.localScale) + tf.position, m.normals[tri]);
         }
-        
+
         /// <summary>
         ///Return a new CSG solid representing space in either this solid or in the
         ///solid `csg`. Neither this solid nor the solid `csg` are modified.
@@ -264,14 +264,17 @@ namespace CombinedStructureGenerator
         /// <summary>
         /// Cube function, Untested but compiles
         /// </summary>
-        /// <param name="c">center</param>
-        /// <param name="r">radius</param>
+        /// <param name="center">world space center of the cube</param>
+        /// <param name="radius">size of the cube created at center</param>
         /// <returns></returns>
-        public static CSG cube(Vector3 c, Vector3 r)
+        public static CSG cube(Vector3? center, Vector3? radius)
         {
+            Vector3 c = center.GetValueOrDefault(Vector3.zero);
+            Vector3 r = radius.GetValueOrDefault(Vector3.one);
+
             //TODO: Test if this works
             Polygon[] polygons = new Polygon[6];
-            int[][][] data = new int [][][] {
+            int[][][] data = new int[][][] {
                 new int[][]{new int[]{0, 4, 6, 2}, new int[]{-1, 0, 0}},
                 new int[][]{new int[]{1, 3, 7, 5}, new int[]{1, 0, 0}},
                 new int[][]{new int[]{0, 1, 5, 4}, new int[]{0, -1, 0}},
@@ -279,18 +282,19 @@ namespace CombinedStructureGenerator
                 new int[][]{new int[]{0, 2, 3, 1}, new int[]{0, 0, -1}},
                 new int[][]{new int[]{4, 5, 7, 6}, new int[]{0, 0, 1}}
             };
-            for(int x = 0; x < 6; x++) {
+            for (int x = 0; x < 6; x++)
+            {
                 int[][] v = data[x];
                 Vector3 normal = new Vector3((float)v[1][0], (float)v[1][1], (float)v[1][2]);
 
                 IVertex[] verts = new IVertex[4];
-                for(int i = 0; i< 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     verts[i] = new Vertex(
                         new Vector3(
-                            c.x + (r.x * (2 * (((i & 1) > 0)?1:0) - 1)),
-                            c.y + (r.y * (2 * (((i & 2) > 0)?1:0) - 1)),
-                            c.z + (r.z * (2 * (((i & 4) > 0)?1:0) - 1))),
+                            c.x + (r.x * (2 * (((i & 1) > 0) ? 1 : 0) - 1)),
+                            c.y + (r.y * (2 * (((i & 2) > 0) ? 1 : 0) - 1)),
+                            c.z + (r.z * (2 * (((i & 4) > 0) ? 1 : 0) - 1))),
                             normal
                         );
                 }
@@ -364,5 +368,4 @@ namespace CombinedStructureGenerator
             return csg;
         }
     }
-
 }

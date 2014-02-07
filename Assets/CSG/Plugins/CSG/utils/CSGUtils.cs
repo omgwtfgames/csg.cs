@@ -1,19 +1,16 @@
+using UnityEngine;
+using System.Collections.Generic;
+
 namespace CombinedStructureGenerator
 {
-
-    using UnityEngine;
-    using System.Collections.Generic;
-
     public class CSGUtils
     {
-        /**
-         * Creates a Polygon from an array of points.
-         * 
-         * @param points
-         * @param shared
-         * 
-         * @return Polygon
-         */
+        /// <summary>
+        /// Creates a Polygon from an array of points.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="shared"></param>
+        /// <returns></returns>
         public static Polygon createPolygon(Vector3[] points, System.Object shared = null)
         {
             if (points.Length < 2)
@@ -31,18 +28,14 @@ namespace CombinedStructureGenerator
             return polygon;
         }
 
-        /**
-         * Extrudes a polygon.
-         * 
-         * @param polygon The polygon to extrude
-         * @param distance Extrusion distance
-         * @param normal Optional normal to extrude along, default is polygon normal
-         * 
-         * @return Vector.<Polygon>
-         */
-        public static List<Polygon> extrudePolygon(Polygon polygon,
-                                                   float distance,
-                                                   Vector3? normal = null)
+        /// <summary>
+        /// Extrudes a polygon.
+        /// </summary>
+        /// <param name="polygon">The polygon to extrude</param>
+        /// <param name="distance">Extrusion distance</param>
+        /// <param name="normal">Optional normal to extrude along, default is polygon normal</param>
+        /// <returns></returns>
+        public static List<Polygon> extrudePolygon(Polygon polygon, float distance, Vector3? normal = null)
         {
             normal = normal != null ? normal : polygon.plane.normal;
 
@@ -68,8 +61,7 @@ namespace CombinedStructureGenerator
                 Vertex v2 = new Vertex(p2, plane.normal);
                 Vertex v3 = new Vertex(p3, plane.normal);
                 Vertex v4 = new Vertex(p4, plane.normal);
-                Polygon poly = new Polygon(new List<IVertex>(new IVertex[] { v1, v2, v3, v4 }),
-                                           polygon.shared);
+                Polygon poly = new Polygon(new List<IVertex>(new IVertex[] { v1, v2, v3, v4 }), polygon.shared);
                 polygons.Add(poly);
                 top.Add(new Vertex(p4, normal.GetValueOrDefault()));
                 bot.Insert(0, new Vertex(p1, invNormal));
@@ -81,5 +73,4 @@ namespace CombinedStructureGenerator
             return polygons;
         }
     }
-
 }
