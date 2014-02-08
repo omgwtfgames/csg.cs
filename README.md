@@ -1,3 +1,7 @@
+*WARNING*: polychop branch is very much a work-in-progress, and does not yet work for any useful purpose. 
+It contains a translation of Stan Melax's original C++ code ( http://www.melax.com/polychop ) to C# / Unity, but porting is not complete.
+
+
 csg.cs
 ======
 
@@ -17,6 +21,5 @@ Copyright (c) 2013 Andrew Perry (http://omgwtfgames.com), under MIT license (C#/
 
 TODO
 ----
-* Works, but adds a whole pile of verticies that don't need to be there. Find a way to simpify the mesh for tris that share a plane (maybe http://www.melax.com/polychop) ?
 * Currently does nothing with the 'shared' field on Polygons. We could use this for tracking submeshes / materials ?
 * Almost certainly could do with optimization (eg, some Lists could probably become Vertex[] or Polygon[] arrays).
