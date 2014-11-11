@@ -1,49 +1,58 @@
 ﻿using UnityEngine;
 using System.Collections;
-using CSG;
+using ConstructiveSolidGeometry;
 
-public class MeshCSGOperation : MonoBehaviour {
+public class MeshCSGOperation : MonoBehaviour
+{
 
     /*
      *  Apply a CSG operation to the meshes for specified GameObjects a and b.
      *  If a and b are not specified (null), grab the meshes from the first to children of the transform.
      *  newObjectPrefab is cloned and given the resulting mesh after the CSG operation.
      */
-    
+
     public enum Operation { Subtract, Union, Intersection };
     public Operation operation;
     public GameObject a;
     public GameObject b;
     public GameObject newObjectPrefab;
-    
-    void Start () {
-        
+
+    void Start()
+    {
+
         Transform[] childs = new Transform[2];
-        if (a == null && b == null) {
+        if (a == null && b == null)
+        {
             int i = 0;
-            foreach (Transform t in transform) {
+            foreach (Transform t in transform)
+            {
                 if (i > 2) break;
                 childs[i] = t;
                 i++;
             }
-        } else {
+        }
+        else
+        {
             childs[0] = a.transform;
             childs[1] = b.transform;
         }
-        CSG.CSG A = CSG.CSG.fromMesh(childs[0].GetComponent<MeshFilter>().mesh, childs[0]);
-        CSG.CSG B = CSG.CSG.fromMesh(childs[1].GetComponent<MeshFilter>().mesh, childs[1]);
-        
-        CSG.CSG result = null;
-        if (operation == Operation.Subtract) {
+        CSG A = CSG.fromMesh(childs[0].GetComponent<MeshFilter>().mesh, childs[0]);
+        CSG B = CSG.fromMesh(childs[1].GetComponent<MeshFilter>().mesh, childs[1]);
+
+        CSG result = null;
+        if (operation == Operation.Subtract)
+        {
             result = A.subtract(B);
         }
-        if (operation == Operation.Union) {
+        if (operation == Operation.Union)
+        {
             result = A.union(B);
         }
-        if (operation == Operation.Intersection) {
+        if (operation == Operation.Intersection)
+        {
             result = A.intersect(B);
         }
-        
+
         /*
          * Debug.Log(A.polygons.Count + ", " + B.polygons.Count + ", " + result.polygons.Count);
         foreach (Polygon p in result.polygons) {
@@ -51,7 +60,7 @@ public class MeshCSGOperation : MonoBehaviour {
             if (p.vertices.Length > 3) Debug.Log("!!! " + p.vertices.Length);
         }
         */
-        
+
         GameObject newGo = Instantiate(newObjectPrefab, Vector3.zero, Quaternion.identity) as GameObject;
         if (result != null) newGo.GetComponent<MeshFilter>().mesh = result.toMesh();
         childs[0].gameObject.SetActive(false);

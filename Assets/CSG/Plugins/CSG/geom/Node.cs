@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace CombinedStructureGenerator
+namespace ConstructiveSolidGeometry
 {
     public class Node
     {

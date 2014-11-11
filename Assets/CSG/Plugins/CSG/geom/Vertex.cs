@@ -1,13 +1,12 @@
 using UnityEngine;
 
-namespace CombinedStructureGenerator
+namespace ConstructiveSolidGeometry
 {
     /// <summary>
     /// Represents a vertex of a polygon. Use your own vertex class instead of this
     /// one to provide additional features like texture coordinates and vertex
     /// colors. Custom vertex classes need to implement the IVertex interface.
     /// 
-    /// @see com.floorplanner.csg.IVertex
     /// </summary>
     public class Vertex : IVertex
     {

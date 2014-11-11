@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CombinedStructureGenerator
+namespace ConstructiveSolidGeometry
 {
     /// <summary>
     /// Represents a convex polygon. The vertices used to initialize a polygon must

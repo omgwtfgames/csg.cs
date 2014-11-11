@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CombinedStructureGenerator
+namespace ConstructiveSolidGeometry
 {
     public class Plane
     {

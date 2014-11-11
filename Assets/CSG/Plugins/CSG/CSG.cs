@@ -48,7 +48,7 @@ using System.Collections.Generic;
 // Original ActionScript version copyright (c) 2011 Evan Wallace (http://madebyevan.com/), under the MIT license.
 // Ported to C# / Unity by Andrew Perry, 2013.
 
-namespace CombinedStructureGenerator
+namespace ConstructiveSolidGeometry
 {
     /// <summary>
     /// Holds a binary space partition tree representing a 3D solid. Two solids can
@@ -169,7 +169,7 @@ namespace CombinedStructureGenerator
         private static Vertex TranslateVertex(Mesh m, Transform tf, int tri)
         {
             Vector3 pos = tf.TransformPoint(m.vertices[tri]);
-            Vector3 norm= tf.TransformDirection(m.normals[tri]);
+            Vector3 norm = tf.TransformDirection(m.normals[tri]);
 
             return new Vertex(pos, norm);
         }
