@@ -12,6 +12,9 @@ namespace ConstructiveSolidGeometry
     {
         public Vector3 pos { get; set; }
         public Vector3 normal;
+        // TODO: Memomry optimization - this could probably be a short rather than int, 
+        //       accessed as a get/set int property that converts the -32,768 to 32,767 range to 0 to 65535
+        public int index = -1;
 
         public Vertex(Vector3 pos)
         {

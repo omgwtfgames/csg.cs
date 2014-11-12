@@ -98,8 +98,8 @@ namespace ConstructiveSolidGeometry
 
         public Mesh toMesh()
         {
-            List<Polygon> trisFromQuads = new List<Polygon>();
-            // replace higher order polygons with tris
+            List<Polygon> trisFromPolygons = new List<Polygon>();
+            // triangulate polygons
             for (int i = this.polygons.Count - 1; i >= 0; i--)
             {
                 if (this.polygons[i].vertices.Length > 3)
@@ -107,41 +107,71 @@ namespace ConstructiveSolidGeometry
                     //Debug.Log("!!! Poly to Tri (order): " + this.polygons[i].vertices.Length);
                     for (int vi = 1; vi < this.polygons[i].vertices.Length - 1; vi++)
                     {
-                        IVertex[] tri = new IVertex[] {this.polygons[i].vertices[0], 
-                                                   this.polygons[i].vertices[vi], 
-                                                   this.polygons[i].vertices[vi+1]};
-                        trisFromQuads.Add(new Polygon(tri));
+                        IVertex[] tri = new IVertex[] {
+                            this.polygons[i].vertices[0], 
+                            this.polygons[i].vertices[vi], 
+                            this.polygons[i].vertices[vi+1]
+                        };
+                        trisFromPolygons.Add(new Polygon(tri));
                     }
+                    // the original polygon is replaced by a set of triangles
                     this.polygons.RemoveAt(i);
                 }
             }
-            this.polygons.AddRange(trisFromQuads);
+            this.polygons.AddRange(trisFromPolygons);
 
-            Mesh m = new Mesh();
-            Vector3[] mverts = new Vector3[this.polygons.Count * 3];
-            Vector3[] mnormals = new Vector3[this.polygons.Count * 3];
-            int[] mtris = new int[this.polygons.Count * 3];
-            int tri_index = 0;
-            foreach (Polygon tri in this.polygons)
+            // TODO: Simplify mesh - the boolean CSG algorithm leaves lots of coplanar
+            //       polygons that share an edge that could be simplified.
+
+            // At this point, we have a soup of triangles without regard for shared vertices.
+            // We index these to combine any vertices with identical positions & normals 
+            // (and maybe later UVs & vertex colors)
+
+            List<Vertex> vertices = new List<Vertex>();
+            int[] tris = new int[this.polygons.Count * 3];
+            for (int pi = 0; pi < this.polygons.Count; pi++)
             {
-                //sDebug.Log("toMesh tri: " + tri.vertices[0].pos + ", " +tri.vertices[1].pos + ", " + tri.vertices[2].pos);
+                Polygon tri = this.polygons[pi];
+                
+                if (tri.vertices.Length > 3) Debug.LogError("Polygon should be a triangle, but isn't !!");
 
-                mverts[tri_index] = tri.vertices[0].pos;
-                mverts[tri_index + 1] = tri.vertices[1].pos;
-                mverts[tri_index + 2] = tri.vertices[2].pos;
-
-                mnormals[tri_index] = (tri.vertices[0] as Vertex).normal;
-                mnormals[tri_index + 1] = (tri.vertices[1] as Vertex).normal;
-                mnormals[tri_index + 2] = (tri.vertices[2] as Vertex).normal;
-
-                mtris[tri_index] = tri_index;
-                mtris[tri_index + 1] = tri_index + 1;
-                mtris[tri_index + 2] = tri_index + 2;
-                tri_index += 3;
+                for (int vi = 0; vi < 3; vi++)
+                {
+                    Vertex vertex = tri.vertices[vi] as Vertex;
+                    bool equivalentVertexAlreadyInList = false;
+                    for (int i = 0; i < vertices.Count; i++)
+                    {
+                        if (vertices[i].pos.ApproximatelyEqual(vertex.pos) && 
+                            vertices[i].normal.ApproximatelyEqual(vertex.normal))
+                        {
+                            equivalentVertexAlreadyInList = true;
+                            vertex.index = vertices[i].index;
+                        }
+                    }
+                    if (!equivalentVertexAlreadyInList)
+                    {
+                        vertices.Add(vertex);
+                        vertex.index = vertices.Count - 1;
+                    }
+                    tris[(pi * 3) + vi] = vertex.index;
+                }
+                //Debug.Log(string.Format("Added tri {0},{1},{2}: {3},{4},{5}", pi, pi+1, pi+2, tris[pi], tris[pi+1], tris[pi+2]));
             }
-            m.vertices = mverts;
-            m.normals = mnormals;
-            m.triangles = mtris;
+
+            Vector3[] verts = new Vector3[this.polygons.Count * 3];
+            Vector3[] normals = new Vector3[this.polygons.Count * 3];
+            Mesh m = new Mesh();
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                verts[i] = vertices[i].pos;
+                normals[i] = vertices[i].normal;
+            }
+            m.vertices = verts;
+            m.normals = normals;
+            m.triangles = tris;
+            //m.RecalculateBounds();
+            //m.RecalculateNormals();
+            //m.Optimize();
 
             //Debug.Log("toMesh verts, normals, tris: " + m.vertices.Length + ", " +m.normals.Length+", "+m.triangles.Length);
 
