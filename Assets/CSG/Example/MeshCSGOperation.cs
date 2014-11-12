@@ -20,24 +20,24 @@ public class MeshCSGOperation : MonoBehaviour
     void Start()
     {
 
-        Transform[] childs = new Transform[2];
+        Transform[] children = new Transform[2];
         if (a == null && b == null)
         {
             int i = 0;
             foreach (Transform t in transform)
             {
                 if (i > 2) break;
-                childs[i] = t;
+                children[i] = t;
                 i++;
             }
         }
         else
         {
-            childs[0] = a.transform;
-            childs[1] = b.transform;
+            children[0] = a.transform;
+            children[1] = b.transform;
         }
-        CSG A = CSG.fromMesh(childs[0].GetComponent<MeshFilter>().mesh, childs[0]);
-        CSG B = CSG.fromMesh(childs[1].GetComponent<MeshFilter>().mesh, childs[1]);
+        CSG A = CSG.fromMesh(children[0].GetComponent<MeshFilter>().mesh, children[0]);
+        CSG B = CSG.fromMesh(children[1].GetComponent<MeshFilter>().mesh, children[1]);
 
         CSG result = null;
         if (operation == Operation.Subtract)
@@ -63,7 +63,7 @@ public class MeshCSGOperation : MonoBehaviour
 
         GameObject newGo = Instantiate(newObjectPrefab, Vector3.zero, Quaternion.identity) as GameObject;
         if (result != null) newGo.GetComponent<MeshFilter>().mesh = result.toMesh();
-        childs[0].gameObject.SetActive(false);
-        childs[1].gameObject.SetActive(false);
+        children[0].gameObject.SetActive(false);
+        children[1].gameObject.SetActive(false);
     }
 }
