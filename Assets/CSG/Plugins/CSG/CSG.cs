@@ -330,9 +330,9 @@ namespace ConstructiveSolidGeometry
                 {
                     verts[i] = new Vertex(
                         new Vector3(
-                            c.x + (r.x * (2 * (((i & 1) > 0) ? 1 : 0) - 1)),
-                            c.y + (r.y * (2 * (((i & 2) > 0) ? 1 : 0) - 1)),
-                            c.z + (r.z * (2 * (((i & 4) > 0) ? 1 : 0) - 1))),
+                            c.x + (r.x * (2 * (((v[0][i] & 1) > 0) ? 1 : 0) - 1)),
+                            c.y + (r.y * (2 * (((v[0][i] & 2) > 0) ? 1 : 0) - 1)),
+                            c.z + (r.z * (2 * (((v[0][i] & 4) > 0) ? 1 : 0) - 1))),
                             normal
                         );
                 }
