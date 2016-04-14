@@ -1,6 +1,8 @@
 csg.cs
 ======
 
+**NOTE:** Don't get too excited. This doesn't work very well at present (see Issues & TODOs). But feel free to try it, maybe even make it better.
+
 Constructive Solid Geometry (CSG) for Unity in C#
 
 Direct port of https://github.com/timknip/csg.as (Actionscript 3) to C# / Unity.
